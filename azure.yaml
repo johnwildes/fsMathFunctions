@@ -1,0 +1,41 @@
+# Azure Developer CLI (azd) configuration
+# https://learn.microsoft.com/azure/developer/azure-developer-cli/azd-schema
+
+name: fsmathfunctions
+metadata:
+  template: fsmathfunctions@0.0.1
+
+# Infrastructure provisioning
+infra:
+  provider: bicep
+  path: infra
+  module: main
+
+# Application services
+services:
+  finance-api:
+    project: .
+    language: dotnet
+    host: containerapp
+    docker:
+      path: Dockerfile
+      context: .
+    resourceName: ${prefix}-${env}-${uniqueSuffix}-finance-api
+
+  portal:
+    project: FsMathFunctions.Portal
+    language: dotnet
+    host: containerapp
+    docker:
+      path: FsMathFunctions.Portal/Dockerfile
+      context: .
+    resourceName: ${prefix}-${env}-${uniqueSuffix}-portal
+
+  portal-ui:
+    project: FsMathFunctions.Portal.UI
+    language: js
+    host: containerapp
+    docker:
+      path: FsMathFunctions.Portal.UI/Dockerfile
+      context: FsMathFunctions.Portal.UI
+    resourceName: ${prefix}-${env}-${uniqueSuffix}-portal-ui
