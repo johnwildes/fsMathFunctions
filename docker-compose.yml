@@ -77,12 +77,12 @@ services:
     build:
       context: FsMathFunctions.Portal.UI
       dockerfile: Dockerfile
+      args:
+        # Embedded at build time by Vite — must be a build ARG, not runtime env
+        VITE_PORTAL_API_URL: "http://localhost:5001"
     restart: unless-stopped
     ports:
       - "3000:80"
-    environment:
-      # Passed at build time via ARG in the Dockerfile
-      VITE_PORTAL_API_URL: "http://localhost:5001"
     depends_on:
       - portal
 
