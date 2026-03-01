@@ -1,0 +1,5 @@
+/home/runner/work/fsMathFunctions/fsMathFunctions/obj/Debug/net6.0/fsMathFunctions.fsproj.AssemblyReference.cache
+/home/runner/work/fsMathFunctions/fsMathFunctions/obj/Debug/net6.0/fsMathFunctions.AssemblyInfoInputs.cache
+/home/runner/work/fsMathFunctions/fsMathFunctions/obj/Debug/net6.0/fsMathFunctions.AssemblyInfo.fs
+/home/runner/work/fsMathFunctions/fsMathFunctions/obj/Debug/net6.0/fsMathFunctions.fsproj.CoreCompileInputs.cache
+/home/runner/work/fsMathFunctions/fsMathFunctions/obj/Debug/net6.0/fsMathFunctions.sourcelink.json
