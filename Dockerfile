@@ -5,7 +5,8 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 # Copy project files first for layer caching
-COPY ["FsMathFunctions.Api/FsMathFunctions.Api.fsproj", "FsMathFunctions.Api/"]
+COPY ["FsMathFunctions.Api/FsMathFunctions.Api.fsproj",   "FsMathFunctions.Api/"]
+COPY ["FsMathFunctions.Data/FsMathFunctions.Data.fsproj", "FsMathFunctions.Data/"]
 RUN dotnet restore "FsMathFunctions.Api/FsMathFunctions.Api.fsproj"
 
 # Copy source and build

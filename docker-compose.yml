@@ -1,0 +1,90 @@
+# Local development environment — all services + PostgreSQL
+# Usage:
+#   docker compose up --build          # start everything
+#   docker compose down -v             # stop and remove volumes
+#
+# Environment variables for secrets (do NOT commit real values):
+#   JWT_SECRET   — HS256 signing key (min 32 chars)
+#
+# Override with a .env file at the repo root, e.g.:
+#   JWT_SECRET=change-me-to-a-real-secret-of-at-least-32-chars
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       fsmathfunctions
+      POSTGRES_USER:     app
+      POSTGRES_PASSWORD: devpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d fsmathfunctions"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ---------------------------------------------------------------------------
+  # Finance API
+  # ---------------------------------------------------------------------------
+  finance-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "5000:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=fsmathfunctions;Username=app;Password=devpassword"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ---------------------------------------------------------------------------
+  # Portal backend
+  # ---------------------------------------------------------------------------
+  portal:
+    build:
+      context: .
+      dockerfile: FsMathFunctions.Portal/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "5001:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=fsmathfunctions;Username=app;Password=devpassword"
+      JWT__Secret:      "${JWT_SECRET:-dev-secret-change-me-in-production-32chars}"
+      JWT__Issuer:      "fsmathfunctions-portal"
+      JWT__Audience:    "fsmathfunctions-portal"
+      JWT__ExpiryHours: "24"
+      CORS__Origins:    "http://localhost:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ---------------------------------------------------------------------------
+  # Portal UI (React + Fluent UI) — built by nginx
+  # ---------------------------------------------------------------------------
+  portal-ui:
+    build:
+      context: FsMathFunctions.Portal.UI
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    environment:
+      # Passed at build time via ARG in the Dockerfile
+      VITE_PORTAL_API_URL: "http://localhost:5001"
+    depends_on:
+      - portal
+
+volumes:
+  postgres_data:
