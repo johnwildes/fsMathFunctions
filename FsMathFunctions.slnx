@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="FsMathFunctions.Api/FsMathFunctions.Api.fsproj" />
+  <Project Path="fsMathFunctions.fsproj" />
+</Solution>
