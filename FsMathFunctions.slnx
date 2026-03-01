@@ -1,4 +1,6 @@
 <Solution>
   <Project Path="FsMathFunctions.Api/FsMathFunctions.Api.fsproj" />
   <Project Path="fsMathFunctions.fsproj" />
+  <Project Path="FsMathFunctions.Data/FsMathFunctions.Data.fsproj" />
+  <Project Path="FsMathFunctions.Portal/FsMathFunctions.Portal.fsproj" />
 </Solution>

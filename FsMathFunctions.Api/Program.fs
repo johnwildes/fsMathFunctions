@@ -7,6 +7,10 @@ open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Hosting
 open Microsoft.OpenApi.Models
 open FsMathFunctions.Api.Handlers
+open Microsoft.EntityFrameworkCore
+open Microsoft.Extensions.Configuration
+open FsMathFunctions.Data.AppDbContext
+open FsMathFunctions.Data
 
 [<EntryPoint>]
 let main args =
@@ -60,7 +64,22 @@ let main args =
         c.AddSecurityRequirement(secReq)
     ) |> ignore
 
+    builder.Services.AddDbContext<AppDbContext>(fun opts ->
+        let cs = builder.Configuration.GetConnectionString("Default") |> Option.ofObj |> Option.defaultValue ""
+        opts.UseNpgsql(cs) |> ignore
+    ) |> ignore
+
     let app = builder.Build()
+
+    // Ensure the database schema exists on every startup.
+    // When no connection string is configured (e.g. local dev without Postgres)
+    // the call is skipped so the API still starts up.
+    let connStr = app.Configuration.GetConnectionString("Default") |> Option.ofObj |> Option.defaultValue ""
+    if not (String.IsNullOrWhiteSpace(connStr)) then
+        do
+            use scope = app.Services.CreateScope()
+            let db = scope.ServiceProvider.GetRequiredService<AppDbContext>()
+            DatabaseInitializer.ensureCreated db
 
     // -----------------------------------------------------------------------
     // Middleware
@@ -73,14 +92,15 @@ let main args =
         opts.RoutePrefix <- "swagger"
     ) |> ignore
 
-    // API-key authentication middleware for every /api/* route
-    let apiKey = app.Configuration.["API_KEY"]
-
+    // API-key authentication middleware for every /api/* route.
+    // Incoming keys are validated by hashing the value (SHA-256, hex) and
+    // checking for a matching non-revoked row in the api_keys table.
+    // When no connection string is configured the check is skipped (local dev).
     app.Use(fun (ctx: HttpContext) (next: RequestDelegate) ->
         task {
             if ctx.Request.Path.StartsWithSegments(PathString("/api")) then
-                if String.IsNullOrWhiteSpace(apiKey) then
-                    // No key configured → allow through (useful during local dev)
+                if String.IsNullOrWhiteSpace(connStr) then
+                    // No DB configured → allow through (local dev without Postgres)
                     do! next.Invoke(ctx)
                 else
                     let found, values = ctx.Request.Headers.TryGetValue("X-API-Key")
@@ -90,14 +110,25 @@ let main args =
                         do! ctx.Response.WriteAsJsonAsync(
                             { error = { code = "UNAUTHORIZED"; message = "X-API-Key header is required"; details = [] } }
                         )
-                    elif values[0] <> apiKey then
-                        ctx.Response.StatusCode  <- 403
-                        ctx.Response.ContentType <- "application/json"
-                        do! ctx.Response.WriteAsJsonAsync(
-                            { error = { code = "FORBIDDEN"; message = "Invalid API key"; details = [] } }
-                        )
                     else
-                        do! next.Invoke(ctx)
+                        let incomingKey = values[0] |> Option.ofObj |> Option.defaultValue ""
+                        let hashBytes   = Security.Cryptography.SHA256.HashData(Text.Encoding.UTF8.GetBytes(incomingKey))
+                        let keyHash     = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant()
+                        use scope = ctx.RequestServices.CreateScope()
+                        let db    = scope.ServiceProvider.GetRequiredService<AppDbContext>()
+                        let valid =
+                            query {
+                                for k in db.ApiKeys do
+                                exists (k.KeyHash = keyHash && not k.RevokedAt.HasValue)
+                            }
+                        if valid then
+                            do! next.Invoke(ctx)
+                        else
+                            ctx.Response.StatusCode  <- 403
+                            ctx.Response.ContentType <- "application/json"
+                            do! ctx.Response.WriteAsJsonAsync(
+                                { error = { code = "FORBIDDEN"; message = "Invalid API key"; details = [] } }
+                            )
             else
                 do! next.Invoke(ctx)
         } :> System.Threading.Tasks.Task
