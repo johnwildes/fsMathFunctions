@@ -5,6 +5,13 @@ obj/
 ## NuGet packages
 *.nupkg
 *.snupkg
+*.nuspec
+
+## .NET test results & coverage
+TestResults/
+coverage/
+*.trx
+*.coveragexml
 
 ## User-specific files
 *.user
@@ -19,12 +26,47 @@ obj/
 ## Rider
 .idea/
 
-## VS Code
+## VS Code workspace settings (keep .vscode/extensions.json if desired)
 .vscode/
 
 ## OS
 .DS_Store
+.DS_Store?
 Thumbs.db
+ehthumbs.db
+desktop.ini
+
+## Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.npm/
+.pnpm-store/
+
+## Vite / React build output
+dist/
+dist-ssr/
+*.local
+
+## Docker
+.docker/
+
+## Azure Developer CLI (azd)
+.azure/
+
+## Terraform state (if ever used alongside Bicep)
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+## Logs
+logs/
+*.log
 
 ## Secrets — never commit
 .env
+.env.local
+.env.*.local
