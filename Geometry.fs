@@ -15,7 +15,7 @@ module Geometry =
     let sphereVolume radius = (4.0 / 3.0) * System.Math.PI * radius * radius * radius
     
     /// Calculate the distance between two points in 2D space
-    let distance (x1, y1) (x2, y2) =
+    let distance (x1: float, y1: float) (x2: float, y2: float) =
         let dx = x2 - x1
         let dy = y2 - y1
         sqrt (dx * dx + dy * dy)
