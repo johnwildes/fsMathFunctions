@@ -124,11 +124,15 @@ No Azure account needed. Everything runs in containers on your machine.
 cp .env.example .env
 ```
 
-Edit `.env` and set a real secret:
+Edit `.env` and set real values for the following variables:
 
 ```
 JWT_SECRET=change-me-to-a-secret-of-at-least-32-characters
+POSTGRES_USER=app
+POSTGRES_PASSWORD=change-me
 ```
+
+`POSTGRES_USER` and `POSTGRES_PASSWORD` are picked up by `docker-compose.yml` at startup (defaults `app` / `devpassword` are used when the variables are not set, but should be overridden for anything beyond a quick local trial).
 
 ### 2. Start all services
 
@@ -245,9 +249,9 @@ curl -X POST "$BASE/api/investment/compound-interest" \
 |---|---|---|---|
 | `POST` | `/auth/register` | — | Create a user account |
 | `POST` | `/auth/login` | — | Returns a JWT |
-| `GET` | `/keys` | JWT | List your API keys |
-| `POST` | `/keys` | JWT | Generate a new key (raw value shown once) |
-| `DELETE` | `/keys/{id}` | JWT | Revoke a key |
+| `GET` | `/api/keys` | JWT | List your API keys |
+| `POST` | `/api/keys` | JWT | Generate a new key (raw value shown once) |
+| `DELETE` | `/api/keys/{id}` | JWT | Revoke a key |
 | `GET` | `/admin/users` | JWT (Admin) | List all users |
 | `DELETE` | `/admin/users/{id}` | JWT (Admin) | Delete a user and all their keys |
 
