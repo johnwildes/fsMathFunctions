@@ -35,10 +35,10 @@ let main args =
 
     // JWT config
     let jwtCfg : JwtConfig =
-        { secret      = cfg.["JWT__Secret"]      |> Option.ofObj |> Option.defaultValue "dev-secret-please-change"
-          issuer      = cfg.["JWT__Issuer"]      |> Option.ofObj |> Option.defaultValue "fsmathfunctions-portal"
-          audience    = cfg.["JWT__Audience"]    |> Option.ofObj |> Option.defaultValue "fsmathfunctions-portal"
-          expiryHours = cfg.["JWT__ExpiryHours"] |> Option.ofObj |> Option.bind (fun s -> match Int32.TryParse(s) with true, n -> Some n | _ -> None) |> Option.defaultValue 24 }
+        { secret      = cfg.["JWT:Secret"]      |> Option.ofObj |> Option.defaultValue "dev-secret-please-change-to-32-chars"
+          issuer      = cfg.["JWT:Issuer"]      |> Option.ofObj |> Option.defaultValue "fsmathfunctions-portal"
+          audience    = cfg.["JWT:Audience"]    |> Option.ofObj |> Option.defaultValue "fsmathfunctions-portal"
+          expiryHours = cfg.["JWT:ExpiryHours"] |> Option.ofObj |> Option.bind (fun s -> match Int32.TryParse(s) with true, n -> Some n | _ -> None) |> Option.defaultValue 24 }
 
     builder.Services.AddSingleton(jwtCfg) |> ignore
 
@@ -46,6 +46,7 @@ let main args =
     builder.Services
         .AddAuthentication("Bearer")
         .AddJwtBearer("Bearer", fun opts ->
+            opts.MapInboundClaims <- false
             opts.TokenValidationParameters <-
                 TokenValidationParameters(
                     ValidateIssuer           = true,

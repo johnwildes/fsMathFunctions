@@ -18,7 +18,7 @@ export interface LoginResponse {
 export interface ApiKeyDto {
   id: string
   label: string
-  keyPrefix: string
+  prefix: string
   createdAt: string
   revokedAt: string | null
 }
@@ -31,7 +31,7 @@ export interface CreateKeyResponse {
   id: string
   label: string
   rawKey: string
-  keyPrefix: string
+  prefix: string
   createdAt: string
 }
 
@@ -91,13 +91,13 @@ export const api = {
     request<LoginResponse>('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
 
   listKeys: (token: string) =>
-    request<ApiKeyDto[]>('/keys', {}, token),
+    request<ApiKeyDto[]>('/api/keys', {}, token),
 
   createKey: (data: CreateKeyRequest, token: string) =>
-    request<CreateKeyResponse>('/keys', { method: 'POST', body: JSON.stringify(data) }, token),
+    request<CreateKeyResponse>('/api/keys', { method: 'POST', body: JSON.stringify(data) }, token),
 
   revokeKey: (id: string, token: string) =>
-    request<void>(`/keys/${id}`, { method: 'DELETE' }, token),
+    request<void>(`/api/keys/${id}`, { method: 'DELETE' }, token),
 
   listUsers: (token: string) =>
     request<UserSummaryDto[]>('/admin/users', {}, token),

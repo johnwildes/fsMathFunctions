@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Dialog,
   DialogSurface,
@@ -48,11 +48,21 @@ export function GenerateKeyModal({ open, onClose, onCreated }: Props) {
   const [loading, setLoading] = useState(false)
   const [created, setCreated] = useState<CreateKeyResponse | null>(null)
 
+  // Reset internal state each time the modal opens so stale state never shows.
+  useEffect(() => {
+    if (open) {
+      setLabel('')
+      setError(null)
+      setCreated(null)
+    }
+  }, [open])
+
   function handleClose() {
-    setLabel('')
-    setError(null)
-    setCreated(null)
+    const wasCreated = created !== null
     onClose()
+    if (wasCreated) {
+      onCreated()
+    }
   }
 
   async function handleCreate() {
@@ -65,7 +75,6 @@ export function GenerateKeyModal({ open, onClose, onCreated }: Props) {
     try {
       const result = await api.createKey({ label: label.trim() }, token!)
       setCreated(result)
-      onCreated()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create key')
     } finally {

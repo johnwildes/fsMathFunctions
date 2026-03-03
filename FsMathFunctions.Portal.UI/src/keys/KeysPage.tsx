@@ -158,7 +158,7 @@ export function KeysPage() {
               <TableRow key={k.id}>
                 <TableCell>{k.label}</TableCell>
                 <TableCell>
-                  <span className={styles.prefix}>{k.keyPrefix}…</span>
+                  <span className={styles.prefix}>{k.prefix}…</span>
                 </TableCell>
                 <TableCell>{new Date(k.createdAt).toLocaleDateString()}</TableCell>
                 <TableCell>
