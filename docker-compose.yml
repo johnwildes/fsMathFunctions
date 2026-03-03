@@ -4,10 +4,14 @@
 #   docker compose down -v             # stop and remove volumes
 #
 # Environment variables for secrets (do NOT commit real values):
-#   JWT_SECRET   — HS256 signing key (min 32 chars)
+#   JWT_SECRET        — HS256 signing key (min 32 chars)
+#   POSTGRES_USER     — PostgreSQL username
+#   POSTGRES_PASSWORD — PostgreSQL password
 #
 # Override with a .env file at the repo root, e.g.:
 #   JWT_SECRET=change-me-to-a-real-secret-of-at-least-32-chars
+#   POSTGRES_USER=app
+#   POSTGRES_PASSWORD=devpassword
 
 services:
 
@@ -19,8 +23,8 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_DB:       fsmathfunctions
-      POSTGRES_USER:     app
-      POSTGRES_PASSWORD: devpassword
+      POSTGRES_USER:     "${POSTGRES_USER:-app}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-devpassword}"
     ports:
       - "5432:5432"
     volumes:
@@ -43,7 +47,7 @@ services:
       - "5000:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=fsmathfunctions;Username=app;Password=devpassword"
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=fsmathfunctions;Username=${POSTGRES_USER:-app};Password=${POSTGRES_PASSWORD:-devpassword}"
     depends_on:
       postgres:
         condition: service_healthy
@@ -60,7 +64,7 @@ services:
       - "5001:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=fsmathfunctions;Username=app;Password=devpassword"
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=fsmathfunctions;Username=${POSTGRES_USER:-app};Password=${POSTGRES_PASSWORD:-devpassword}"
       JWT__Secret:      "${JWT_SECRET:-dev-secret-change-me-in-production-32chars}"
       JWT__Issuer:      "fsmathfunctions-portal"
       JWT__Audience:    "fsmathfunctions-portal"
