@@ -168,21 +168,31 @@ module Handlers =
         if req.periodicContribution.HasValue && req.periodicContribution.Value < 0m then
             errors.Add("periodicContribution must be non-negative")
 
+        let contribution =
+            if req.periodicContribution.HasValue then req.periodicContribution.Value
+            else 0m
+
+        // Validate contributionFrequency when a contribution is provided
+        let normalizedFrequency =
+            if String.IsNullOrEmpty(req.contributionFrequency) then "monthly"
+            else req.contributionFrequency
+        if contribution > 0m then
+            match normalizedFrequency with
+            | "monthly" | "quarterly" | "annually" -> ()
+            | _ -> errors.Add("contributionFrequency must be \"monthly\", \"quarterly\", or \"annually\"")
+
         if errors.Count > 0 then
             badRequest "VALIDATION_ERROR" "Invalid request parameters" (List.ofSeq errors)
         else
             let annualRate   = req.annualRatePercent / 100m
-            let contribution =
-                if req.periodicContribution.HasValue then req.periodicContribution.Value
-                else 0m
 
-            // Map contributionFrequency string to times-per-year; default to monthly
+            // Map contributionFrequency string to times-per-year
             let contributionsPerYear =
                 if contribution > 0m then
-                    match req.contributionFrequency with
+                    match normalizedFrequency with
                     | "quarterly" -> 4
                     | "annually"  -> 1
-                    | _           -> 12  // "monthly" or anything else → monthly
+                    | _           -> 12  // "monthly"
                 else
                     0
 

@@ -138,6 +138,13 @@ let main args =
     // Endpoints
     // -----------------------------------------------------------------------
 
+    app.MapGet("/health", Func<IResult>(fun () -> Results.Ok({| status = "healthy" |})))
+        .WithName("Health")
+        .WithTags("System")
+        .WithSummary("Health check")
+        .ExcludeFromDescription()
+    |> ignore
+
     app
         .MapPost("/api/loan/payment", Func<LoanPaymentRequest, IResult>(handleLoanPayment))
         .WithName("LoanPayment")
@@ -149,6 +156,8 @@ let main args =
         )
         .Produces<LoanPaymentResponse>(200)
         .Produces<ErrorResponse>(400)
+        .Produces<ErrorResponse>(401)
+        .Produces<ErrorResponse>(403)
     |> ignore
 
     app
@@ -163,6 +172,8 @@ let main args =
         )
         .Produces<MortgageAmortizationResponse>(200)
         .Produces<ErrorResponse>(400)
+        .Produces<ErrorResponse>(401)
+        .Produces<ErrorResponse>(403)
     |> ignore
 
     app
@@ -177,6 +188,8 @@ let main args =
         )
         .Produces<CompoundInterestResponse>(200)
         .Produces<ErrorResponse>(400)
+        .Produces<ErrorResponse>(401)
+        .Produces<ErrorResponse>(403)
     |> ignore
 
     app.Run()
